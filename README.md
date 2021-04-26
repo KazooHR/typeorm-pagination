@@ -1,6 +1,16 @@
 # TypeORM Find and Paginate
 
-[Cursor-based pagination](https://relay.dev/graphql/connections.htm) over any TypeORM repository using the built-in [`find` options](https://github.com/typeorm/typeorm/blob/master/docs/find-options.md) and more!
+Enables [Relay-style cursor pagination](https://relay.dev/graphql/connections.htm) over any TypeORM repository using the built-in [`find` options](https://github.com/typeorm/typeorm/blob/master/docs/find-options.md) and more!
+
+In Kazoo's GraphQL layer, we use cursor pagination wherever feasible for the following benefits:
+
+- Records are not duplicated when iterating over an entire, frequently changing, result set
+- Each page is efficiently satisfied by a single query... including whether or not there is a next page!
+- Results can be efficiently resumed before or after any individual result
+- The last page is as fast as the first as long as cursor fields are indexed
+- Relay-style cursor pagination is supported natively by Apollo Client
+
+For more background on the UX and engineering tradeoffs, see https://uxdesign.cc/why-facebook-says-cursor-pagination-is-the-greatest-d6b98d86b6c0.
 
 ### Examples
 
@@ -13,6 +23,23 @@ const page = await findWithPagination(goalRepository, {
   order: { "o.name": "ASC", completed: "ASC" },
   pagination: { first: 10, after: "xyz=" },
 });
+```
+
+Resulting in a page like this:
+
+```jsonc
+{
+  "edges": [
+    /* Array<{ node: T }> */
+  ],
+  "pageInfo": {
+    "totalCount": 3,
+    "hasNextPage": false,
+    "hasPreviousPage": false,
+    "startCursor": "IjExMWQzZDE1LWI5NGEtNGY3Yi1iZDE3LTZmYmVmZGQ4ZGQ3NyI=",
+    "endCursor": "Ijk2MzhkZWM5LWVmZTEtNDQ2Zi05MjE3LTQ5OWY4ZTVkNDc2OSI="
+  }
+}
 ```
 
 When paginating, all `order` fields must be non-null; see [Paginate by a Nullable Field](#paginate-by-a-nullable-field).
