@@ -80,7 +80,7 @@ Just some internal notes for contributing to the tests.
 
 #### Quickstart
 
-`nvm use && yarn develop`
+`nvm use && yarn develop a`
 
 #### Statements
 
