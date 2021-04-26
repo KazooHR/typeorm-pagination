@@ -1,0 +1,35 @@
+{
+  "name": "@kazoohr/typeorm-pagination",
+  "repository": "github:KazooHR/typeorm-pagination",
+  "private": true,
+  "version": "1.0.0-alpha",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "main": "build/index.js",
+  "author": "Kazoo <engineering@kazoohr.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf build",
+    "test": "jest --coverage",
+    "develop": "yarn && yarn test --watch"
+  },
+  "peerDependencies": {
+    "typeorm": "^0.2.32"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.16",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-proposal-decorators": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
+    "@babel/preset-typescript": "^7.13.0",
+    "@types/jest": "^26.0.23",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3",
+    "sqlite3": "^5.0.2",
+    "typeorm": "^0.2.32",
+    "typeorm-naming-strategies": "^2.0.0",
+    "typescript": "^4.2.4"
+  }
+}
