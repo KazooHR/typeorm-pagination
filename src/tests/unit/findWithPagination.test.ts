@@ -89,9 +89,7 @@ describe("pagination", () => {
     const page = await findWithPagination(fooRepository, {
       select: ["foo"],
       where: { foo: Like("page-test-%") },
-      // loadEagerRelations: false
     });
-    console.log(page.edges[0].node)
     expect(page.edges[0].node).toEqual({ foo: 'page-test-a' });
     expect(page.pageInfo.hasPreviousPage).toEqual(false)
     expect(page.pageInfo.hasNextPage).toEqual(false)
@@ -102,9 +100,9 @@ describe("pagination", () => {
     const page = await findWithPagination(fooRepository, {
       select: ["foo"],
       where: { foo: Like("page-test-%") },
-      pagination: { last: 2 },
-      loadEagerRelations: false
+      pagination: { last: 2 }
     });
+    expect(page.edges.length).toEqual(2);
     expect(page.pageInfo.hasPreviousPage).toEqual(true)
     expect(page.pageInfo.hasNextPage).toEqual(false)
   });

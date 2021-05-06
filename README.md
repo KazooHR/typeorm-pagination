@@ -170,5 +170,4 @@ The test connection uses in-memory SQLite for speed above all else. If your enti
 
 ##### README.md Suggested Addtions 
 - Define a compatible node type
-- Define what is required for calling the method, what is optional, and what 
-  are the defaults
+- Define required/optional parameters and defaults for findWithPagination()

@@ -150,7 +150,6 @@ describe("cursor paginator", () => {
     });
 
     const page = await paginator.page({ first: 10 });
-    console.log(page.edges)
     const after = page.edges[0].cursor;
     const before = page.edges[4].cursor;
 
