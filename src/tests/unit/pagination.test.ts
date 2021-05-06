@@ -1,7 +1,7 @@
 import * as typeorm from "typeorm";
 
-import { CursorPaginator, Page } from "./pagination";
-import { getTestConnection } from "./testConnection";
+import { CursorPaginator, Page } from "../../pagination";
+import { getTestConnection } from "../testConnection";
 
 @typeorm.Entity()
 class Person {

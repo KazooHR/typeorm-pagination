@@ -1,6 +1,6 @@
 import * as typeorm from "typeorm";
 
-import { getTestConnection } from "./testConnection";
+import { getTestConnection } from "../testConnection";
 
 @typeorm.Entity()
 export default class Foo {

@@ -126,7 +126,7 @@ export class CursorPaginator<T> {
     if (last) this.reverseOrdering(query);
     if (after) this.applyCursor(query, after);
     if (before) this.applyCursor(query, before, true);
-
+    console.log(query.getQuery())
     const result = await query.limit(pageSize + 1).getRawAndEntities();
     const hasMore = result.raw.length > pageSize;
     const hasNextAndPrevious =
@@ -134,11 +134,26 @@ export class CursorPaginator<T> {
         ? { hasNext: hasMore, hasPrevious: !!after }
         : { hasNext: !!before, hasPrevious: hasMore };
 
-    return new Page(result, {
+    return new Page(this.sanitizeEntities(result), {
       pageSize,
       paginator: this,
       ...hasNextAndPrevious,
     });
+  }
+
+  /**
+   * Removes fields from entities that were not in the query select and are
+   * therefore undefined
+   * @param getRawAndEntitiesResult
+   */
+  sanitizeEntities(getRawAndEntitiesResult: { entities: T[]; raw: Record<string, string | number | object | Date>[]; }) {
+    const entities = getRawAndEntitiesResult.entities
+    // @ts-ignore
+    getRawAndEntitiesResult.entities = entities.map((entity: { [x: string]: any; }) => {
+     Object.keys(entity).forEach(key => entity[key] === undefined && delete entity[key])
+      return entity
+    })
+    return getRawAndEntitiesResult
   }
 
   /**

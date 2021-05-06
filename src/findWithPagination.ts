@@ -35,9 +35,9 @@ export function findWithPagination<
   const { order = {}, pagination = {}, virtual, ...baseOptions } = options;
   const alias = Find.extractFindManyOptionsAlias(baseOptions) || metadata.name;
   const query = repository.createQueryBuilder(alias);
-
   // Eager relations are always loaded by default.
   const loadEagerByDefault = !Find.isFindManyOptions(baseOptions);
+
   const loadEagerByFindOptions = options.loadEagerRelations !== false;
   if (loadEagerByDefault || loadEagerByFindOptions) {
     Find.joinEagerRelations(query, query.alias, metadata);
@@ -58,5 +58,7 @@ function buildBaseQuery<T>(
   { builder, ...baseOptions }: Exclude<FindOptions<T>, "pagination">
 ) {
   Find.applyFindManyOptionsOrConditionsToQueryBuilder<T>(query, baseOptions);
+
   builder?.(query);
 }
+
