@@ -12,6 +12,73 @@ In Kazoo's GraphQL layer, we use cursor pagination wherever feasible for the fol
 
 For more background on the UX and engineering tradeoffs, see https://uxdesign.cc/why-facebook-says-cursor-pagination-is-the-greatest-d6b98d86b6c0.
 
+### What is cursor-based pagination?
+
+Cursor-based pagination is means of paginating through large result sets from a particular record within that set. Your first request might not know any cursors. So your initial request looks something like:
+
+```gql
+{
+  goals(input: { first: 1 }) {
+    pageInfo {
+      totalCount
+      hasNextPage
+      hasPreviousPage
+    }
+    edges {
+      cursor
+      node {
+        id
+        name
+      }
+    }
+  }
+}
+```
+
+You will receive data in the following shape:
+
+```json
+{
+  "goalConnection": {
+    "pageInfo": {
+      "totalCount": 746,
+      "hasNextPage": true,
+      "hasPreviousPage": false
+    },
+    "edges": [{
+      "cursor": "some-opaque-cursor-unique-to-this-record-in-this-result-set",
+      "edge": {
+        "id": "goal-id",
+        "name": "Goal Name"
+      }
+    }]
+  }
+}
+```
+
+Your second request, to get the second item in the result set, would look like this:
+
+```gql
+{
+  goals(input: { first: 1, after: "some-opaque-cursor-unique-to-this-record-in-this-result-set" }) {
+    pageInfo {
+      totalCount
+      hasNextPage
+      hasPreviousPage
+    }
+    edges {
+      cursor
+      node {
+        id
+        name
+      }
+    }
+  }
+}
+```
+
+For more information on how cursor-based pagination works, and how it's standardized for GraphQL, see https://relay.dev/docs/guides/graphql-server-specification/
+
 ### Examples
 
 ```ts
@@ -65,7 +132,7 @@ await findWithPagination(fooRepository, {
 If you need to order by a nullable field, you need to coalesce that field into something that consistently sortable across pages. For example, given a nullable `deletedAt` column:
 
 ```ts
-const page = await database.find("GoalCategory", {
+const page = await findWithPagination(fooRepository, {
   order: { sortableDeletedAt: "ASC" },
   pagination: { first, after },
   virtual: {
@@ -91,7 +158,7 @@ import { instrumentTestLogger } from "./testConnection";
 
 it("executes the expected query", () => {
   const { queries, errors } = instrumentTestLogger(connection);
-  await database.find("Foo", { where: { foo: "testing" } });
+  await findWithPagination(fooRepository, { where: { foo: "testing" } });
   expect(queries).toMatchInlineSnapshot(/* ... */);
   expect(errors).toEqual([]);
 });
