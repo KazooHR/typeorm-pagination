@@ -203,3 +203,50 @@ describe("cursor paginator", () => {
     });
   });
 });
+
+describe.only("cursor encoding safety", () => {
+  let query: typeorm.SelectQueryBuilder<Foo>;
+
+  beforeAll(async () => {
+    const personRepository = connection.getRepository(Person);
+
+    const ownerA = await personRepository.save({ name: "D" });
+
+    const fooRepository = connection.getRepository(Foo);
+    await fooRepository.insert([
+      { owner: ownerA, foo: "foo|bar", timestamp: "2021-03-01" },
+      { owner: ownerA, foo: "dood|ranch", timestamp: "2021-01-01" },
+    ]);
+
+    query = fooRepository
+      .createQueryBuilder("f")
+      .innerJoinAndSelect("f.owner", "o")
+      .andWhere("owner_id = :ownerId", { ownerId: ownerA.id });
+  });
+
+  it("paginates properly", async () => {
+    const paginator = new CursorPaginator(query, {
+      "o.name": "ASC",
+      foo: "ASC",
+    });
+
+    const page = await paginator.page({ first: 3 });
+    expect(page.pageInfo.startCursor).toEqual("IkQifCJkb29kfHJhbmNoInw3");
+    expect(page.pageInfo.endCursor).toEqual("IkQifCJmb298YmFyInw2");
+  });
+
+  it("paginates between cursors", async () => {
+    const paginator = new CursorPaginator(query, {
+      "o.name": "ASC",
+      foo: "ASC",
+      timestamp: "ASC",
+    });
+
+    const page = await paginator.page({ first: 10 });
+    const after = page.edges[0].cursor;
+    const before = page.edges[1].cursor;
+
+    const betweenPage = await paginator.page({ first: 3, after, before });
+    expectPage(betweenPage, ["d", "a", "c"]);
+  });
+});
