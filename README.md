@@ -147,7 +147,7 @@ Just some internal notes for contributing to the tests.
 
 #### Quickstart
 
-`nvm use && yarn develop a`
+`nvm use && yarn develop`
 
 #### Statements
 
