@@ -13,7 +13,7 @@
     "build": "tsc",
     "clean": "rm -rf build",
     "test": "jest --coverage",
-    "develop": "yarn && yarn test --watch"
+    "develop": "yarn && yarn test --watch a"
   },
   "peerDependencies": {
     "typeorm": "^0.2.32"

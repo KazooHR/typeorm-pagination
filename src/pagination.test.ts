@@ -204,7 +204,7 @@ describe("cursor paginator", () => {
   });
 });
 
-describe.skip("cursor encoding safety", () => {
+describe("cursor encoding safety", () => {
   let query: typeorm.SelectQueryBuilder<Foo>;
 
   beforeAll(async () => {
@@ -224,7 +224,7 @@ describe.skip("cursor encoding safety", () => {
       .andWhere("owner_id = :ownerId", { ownerId: ownerA.id });
   });
 
-  it("paginates between cursors when the cursor data contains pipes", async () => {
+  it("paginates between cursors when the cursor data contains pipe (|) characters", async () => {
     const paginator = new CursorPaginator(query, {
       "o.name": "ASC",
       foo: "ASC",
@@ -233,9 +233,8 @@ describe.skip("cursor encoding safety", () => {
 
     const page = await paginator.page({ first: 10 });
     const after = page.edges[0].cursor;
-    const before = page.edges[1].cursor;
 
-    expect(await paginator.page({ first: 3, after, before })).resolves.toEqual(
+    await expect(paginator.page({ first: 3, after })).resolves.toEqual(
       expect.anything()
     );
   });
