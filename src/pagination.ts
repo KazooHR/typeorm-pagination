@@ -1,5 +1,6 @@
 import { SelectQueryBuilder, WhereExpression, Brackets } from "typeorm";
 
+// TODO: Delete me? It would be nice to not have to use a delimiter here... 🤔
 const DELIMITER = "|";
 
 type Query<T> = SelectQueryBuilder<T>;
@@ -145,7 +146,7 @@ export class CursorPaginator<T> {
    * Encode a cursor for the given row.
    */
   cursor(row: Row) {
-    return this.encodeCursor(this.getPosition(row));
+    return this.encodeCursor(row);
   }
 
   /**
@@ -322,21 +323,26 @@ export class CursorPaginator<T> {
     return builtOrder;
   }
 
-  protected decodeCursor(cursor: string) {
-    const value = Buffer.from(cursor, "base64").toString();
-    return value.split(DELIMITER).map((value) => JSON.parse(value));
+  /**
+   * Given a cursor, transforms it into its underlying data so that we can use
+   * it to find the next set of results.
+   */
+  protected decodeCursor(cursor: string): string[] {
+    return JSON.parse(cursor).map((item: string) => JSON.parse(item));
   }
 
-  protected encodeCursor(position: string[]) {
-    const value = position.join(DELIMITER);
-    return Buffer.from(value).toString("base64");
-  }
-
-  protected getPosition(row: Row) {
-    return Object.keys(this.order).map((column) => {
+  /**
+   * Given a set of data that points to a specific row in the database, this
+   * function returns an opaque, encoded cursor that users can utilize to
+   * paginate through results.
+   */
+  protected encodeCursor(row: Row): string {
+    const data = Object.keys(this.order).map((column) => {
       const property = column.replace(".", "_");
       // Fall back to null so missing columns don't blow up the decoder.
       return JSON.stringify(row[property] || null);
     });
+
+    return JSON.stringify(data);
   }
 }

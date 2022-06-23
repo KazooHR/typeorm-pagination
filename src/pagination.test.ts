@@ -43,9 +43,9 @@ afterAll(async () => {
   await connection.close();
 });
 
-afterEach(jest.resetAllMocks);
+afterEach(jest.clearAllMocks);
 
-function expectPage(page: Page<Foo>, fooValues: string[]) {
+function expectPageValues(page: Page<Foo>, fooValues: string[]) {
   expect(page.edges.map((item) => item.node.foo)).toEqual(fooValues);
 }
 
@@ -77,30 +77,37 @@ describe("cursor paginator", () => {
       .innerJoinAndSelect("f.owner", "o");
   });
 
-  it("paginates in ascending order", async () => {
+  it.only("paginates in ascending order", async () => {
     const paginator = new CursorPaginator(query, {
       "o.name": "ASC",
       foo: "ASC",
     });
 
     const page = await paginator.page({ first: 3 });
-    expectPage(page, ["b", "d", "a"]);
+    expectPageValues(page, ["b", "d", "a"]);
     expect(page.pageInfo.hasNextPage).toEqual(true);
     expect(page.pageInfo.hasPreviousPage).toEqual(false);
     expect(page.pageInfo.startCursor).toEqual(expect.any(String));
     expect(page.pageInfo.endCursor).toEqual(expect.any(String));
 
-    const after = page.pageInfo.endCursor;
-    const nextPage = await paginator.page({ first: 3, after });
+    const nextPage = await paginator.page({
+      first: 3,
+      after: page.pageInfo.endCursor,
+    });
     expect(nextPage.pageInfo.hasNextPage).toBe(false);
     expect(nextPage.pageInfo.hasPreviousPage).toBe(true);
 
-    const before = page.pageInfo.endCursor;
-    const firstPageBefore = await paginator.page({ first: 3, before });
-    expectPage(firstPageBefore, ["b", "d"]);
+    const firstPageBefore = await paginator.page({
+      first: 3,
+      before: page.pageInfo.endCursor,
+    });
+    expectPageValues(firstPageBefore, ["b", "d"]);
 
-    const lastPageBefore = await paginator.page({ last: 3, before });
-    expectPage(lastPageBefore, ["d", "b"]);
+    const lastPageBefore = await paginator.page({
+      last: 3,
+      before: page.pageInfo.endCursor,
+    });
+    expectPageValues(lastPageBefore, ["d", "b"]);
   });
 
   it("paginates in descending order", async () => {
@@ -111,10 +118,10 @@ describe("cursor paginator", () => {
     });
 
     const firstPage = await paginator.page({ first: 3 });
-    expectPage(firstPage, ["e", "c", "a"]);
+    expectPageValues(firstPage, ["e", "c", "a"]);
 
     const lastPage = await paginator.page({ last: 3 });
-    expectPage(lastPage, ["b", "d", "a"]);
+    expectPageValues(lastPage, ["b", "d", "a"]);
   });
 
   it("paginates in mixed order", async () => {
@@ -124,22 +131,22 @@ describe("cursor paginator", () => {
     });
 
     const page = await paginator.page({ first: 3 });
-    expectPage(page, ["a", "c", "e"]);
+    expectPageValues(page, ["a", "c", "e"]);
     expect(page.pageInfo.hasNextPage).toEqual(true);
     expect(page.pageInfo.hasPreviousPage).toEqual(false);
 
     const after = page.pageInfo.endCursor;
     const nextPage = await paginator.page({ first: 3, after });
-    expectPage(nextPage, ["b", "d"]);
+    expectPageValues(nextPage, ["b", "d"]);
     expect(nextPage.pageInfo.hasNextPage).toBe(false);
     expect(nextPage.pageInfo.hasPreviousPage).toBe(true);
 
     const before = page.pageInfo.endCursor;
     const firstPageBefore = await paginator.page({ first: 3, before });
-    expectPage(firstPageBefore, ["a", "c"]);
+    expectPageValues(firstPageBefore, ["a", "c"]);
 
     const lastPageBefore = await paginator.page({ last: 3, before });
-    expectPage(lastPageBefore, ["c", "a"]);
+    expectPageValues(lastPageBefore, ["c", "a"]);
   });
 
   it("paginates between cursors", async () => {
@@ -154,7 +161,7 @@ describe("cursor paginator", () => {
     const before = page.edges[4].cursor;
 
     const betweenPage = await paginator.page({ first: 3, after, before });
-    expectPage(betweenPage, ["d", "a", "c"]);
+    expectPageValues(betweenPage, ["d", "a", "c"]);
   });
 
   it("paginates nulls with custom sort field", async () => {
@@ -166,13 +173,13 @@ describe("cursor paginator", () => {
     );
 
     const firstPage = await paginator.page({ first: 2 });
-    expectPage(firstPage, ["a", "b"]);
+    expectPageValues(firstPage, ["a", "b"]);
 
     const secondPage = await paginator.page({
       first: 2,
       after: firstPage.pageInfo.endCursor,
     });
-    expectPage(secondPage, ["c", "d"]);
+    expectPageValues(secondPage, ["c", "d"]);
   });
 
   it("counts", async () => {
