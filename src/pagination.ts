@@ -49,11 +49,6 @@ class Edge<T> {
 /**
  * Represents a single page of results.
  */
-
-/*
-* Not a big deal but this could be in its own file with the class name page
-* There is an opportunity to use dependency injection for the Edge class
-*/
 export class Page<T> {
   constructor(
     protected result: { entities: T[]; raw: Row[] },
@@ -94,11 +89,6 @@ export class Page<T> {
   }
 }
 
-/*
-* There is an opportunity to use dependency injection for the Bracket and Page
-*  classes
-*/
-
 /**
  * Paginates through an ordered selection in a single query.
  */
@@ -134,17 +124,6 @@ export class CursorPaginator<T> {
     after,
     before,
   }: ValidatePageOptions<O>): Promise<Page<T>> {
-    /*
-      I would like to stop execution here if required any method params are
-      invalid, we can reduce the number of exceptions typeorm throws back and
-      create more helpful error messages
-      For example :
-      `await paginator.page({ first: 3, last: 3 });`
-      will result in this error:
-      `Provided "limit" value is not a number. Please provide a numeric
-      value.`
-      which make sense but is not quickly identifiable
-    */
     const pageSize = (first ?? last) as number;
     const query = this.query.clone();
     if (last) this.reverseOrdering(query);
@@ -259,10 +238,6 @@ export class CursorPaginator<T> {
       isBefore: boolean;
     }
   ): void {
-    /*
-      I would like to extract portions of this method and introduce some single
-     responsibility
-     */
     const column = columns[index];
     const expression = this.getColumnExpression(query, column);
     const isReversed = this.order[column] === "DESC";
