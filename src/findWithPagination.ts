@@ -43,11 +43,6 @@ export function findWithPagination<
   const loadEagerByDefault = !Find.isFindManyOptions(baseOptions);
   const loadEagerByFindOptions = options.loadEagerRelations !== false;
   if (loadEagerByDefault || loadEagerByFindOptions) {
-   /*
-    not quite sure eager loading is fully working, joins are added but
-    not selects
-
-    */
     Find.joinEagerRelations(query, query.alias, metadata);
   }
 

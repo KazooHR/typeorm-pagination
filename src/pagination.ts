@@ -1,5 +1,3 @@
-/* I think all the protected properties and methods in these classes can be
- private -- none of the classes are extended by a child class*/
 import { SelectQueryBuilder, WhereExpression, Brackets } from "typeorm";
 
 const DELIMITER = "|";

@@ -63,26 +63,6 @@ describe("pagination", () => {
     ]);
   });
 
-/* Test suggestions
-  * Dry up the tests - one test for finding functionality, one test for ordering
- default functionality, one test for ordering -no default option, a few for
- *  pagination.
- *  This way
-   we can assert on one expectation (of course maybe multiple assertions
-    still) per test.
-    *
-    * For example: Only one of the tests below needs to have a where clause
-    *  - and the first test should be split into two one for order and one
-    *  for pagination
-
-  * It might be nice to do the find test with number or boolean types to
-  avoid a like comparison on the where clause -- just to speed things up
-
-  * Given the time it would be ideal to mock some of the typeorm classes so
-  *  we can test the Outgoing class command messages to ensure they get sent.
-  *  For example, when we are testing that eager loading happens by default
-  *  we could instead assert the method `joinEagerRelations` is called on FindOptionsUtils
- */
   it("finds the first page with default order and default pagination", async () => {
 
     const fooRepository = connection.getRepository(Foo);
