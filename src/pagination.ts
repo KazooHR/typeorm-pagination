@@ -96,6 +96,7 @@ export class CursorPaginator<T> {
   protected query: Query<T>;
   protected order: Order;
   protected virtual: Record<string, string | undefined>;
+  private readonly _encoding = "base64"
 
   /**
    * @param options.ordering The raw SQL columns to sort by (Ex: "foo", "r.bar").
@@ -114,6 +115,8 @@ export class CursorPaginator<T> {
 
   /**
    * Execute a single query for the requested page of results.
+   *
+   * @throws a runtime error when aliased `order` columns do not exist in the query.
    */
   async page<O extends PageOptions>({
     first,
@@ -126,13 +129,8 @@ export class CursorPaginator<T> {
     if (last) this.reverseOrdering(query);
     if (after) this.applyCursor(query, after);
     if (before) this.applyCursor(query, before, true);
-
     const result = await query.limit(pageSize + 1).getRawAndEntities();
-    const hasMore = result.raw.length > pageSize;
-    const hasNextAndPrevious =
-      first !== undefined
-        ? { hasNext: hasMore, hasPrevious: !!after }
-        : { hasNext: !!before, hasPrevious: hasMore };
+    const hasNextAndPrevious = this.getHasNextAndPrevious(result, pageSize, first, after, before)
 
     return new Page(result, {
       pageSize,
@@ -141,23 +139,31 @@ export class CursorPaginator<T> {
     });
   }
 
+  private getHasNextAndPrevious(result: { entities: T[]; raw: any[] }, pageSize: number, first: number | undefined, after: string | undefined, before: string | undefined) {
+    const hasMore = result.raw.length > pageSize
+    const showingFirstPage = first !== undefined
+    return showingFirstPage
+        ? { hasNext: hasMore, hasPrevious: !!after }
+        : { hasNext: !!before, hasPrevious: hasMore }
+  }
+
   /**
    * Encode a cursor for the given row.
    */
-  cursor(row: Row) {
+  cursor(row: Row): string {
     return this.encodeCursor(this.getPosition(row));
   }
 
   /**
    * Execute an additional query for the total number of rows.
    */
-  count() {
+  count(): Promise<number> {
     return this.query.getCount();
   }
 
   // QUERY INTERNALS - These all mutate the query in place.
 
-  protected applyOrdering(query: Query<T>, order = this.order) {
+  protected applyOrdering(query: Query<T>, order = this.order): Query<T> {
     const columns = Array.from(Object.entries(order));
     columns.forEach(([column, direction], index) => {
       const expression = this.getColumnExpression(query, column);
@@ -175,7 +181,7 @@ export class CursorPaginator<T> {
     return query;
   }
 
-  protected reverseOrdering(query: Query<T>) {
+  protected reverseOrdering(query: Query<T>): Query<T> {
     const order: Order = {};
     Object.entries(this.order).forEach(([column, direction]) => {
       order[column] = direction === "ASC" ? "DESC" : "ASC";
@@ -184,7 +190,7 @@ export class CursorPaginator<T> {
     return this.applyOrdering(query, order);
   }
 
-  protected applyCursor(query: Query<T>, cursor: string, isBefore = false) {
+  protected applyCursor(query: Query<T>, cursor: string, isBefore = false): void {
     const columns = Object.keys(this.order);
     const position = this.decodeCursor(cursor);
     query.andWhere(
@@ -231,7 +237,7 @@ export class CursorPaginator<T> {
       index: number;
       isBefore: boolean;
     }
-  ) {
+  ): void {
     const column = columns[index];
     const expression = this.getColumnExpression(query, column);
     const isReversed = this.order[column] === "DESC";
@@ -322,14 +328,15 @@ export class CursorPaginator<T> {
     return builtOrder;
   }
 
+
   protected decodeCursor(cursor: string) {
-    const value = Buffer.from(cursor, "base64").toString();
+    const value = Buffer.from(cursor, this._encoding).toString();
     return value.split(DELIMITER).map((value) => JSON.parse(value));
   }
 
   protected encodeCursor(position: string[]) {
     const value = position.join(DELIMITER);
-    return Buffer.from(value).toString("base64");
+    return Buffer.from(value).toString(this._encoding);
   }
 
   protected getPosition(row: Row) {

@@ -30,12 +30,15 @@ export type FindOptions<T = any> = (FindManyOptions<T> | FindConditions<T>) & {
 export function findWithPagination<
   T extends ObjectLiteral,
   O extends FindOptions<T>
->(repository: Repository<T>, options: FindOptions<T>): Promise<Page<T>> {
+>(
+  repository: Repository<T>,
+  options: FindOptions<T>,
+  Paginator: typeof CursorPaginator = CursorPaginator)
+  : Promise<Page<T>> {
   const metadata = repository.metadata;
   const { order = {}, pagination = {}, virtual, ...baseOptions } = options;
   const alias = Find.extractFindManyOptionsAlias(baseOptions) || metadata.name;
   const query = repository.createQueryBuilder(alias);
-
   // Eager relations are always loaded by default.
   const loadEagerByDefault = !Find.isFindManyOptions(baseOptions);
   const loadEagerByFindOptions = options.loadEagerRelations !== false;
@@ -47,7 +50,7 @@ export function findWithPagination<
   // We need to order by join columns and append the PK as a tiebreaker.
   buildBaseQuery(query, baseOptions);
 
-  const paginator = new CursorPaginator(query, order, virtual);
+  const paginator = new Paginator(query, order, virtual);
   const { first = 100, last, after, before } = pagination;
   const pageOptions = last ? { last, after, before } : { first, after, before };
   return paginator.page(pageOptions);

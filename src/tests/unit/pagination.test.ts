@@ -1,7 +1,7 @@
 import * as typeorm from "typeorm";
 
-import { CursorPaginator, Page } from "./pagination";
-import { getTestConnection } from "./testConnection";
+import { CursorPaginator, Page } from "../../pagination";
+import { getTestConnection } from "../testConnection";
 
 @typeorm.Entity()
 class Person {
@@ -63,7 +63,7 @@ describe("cursor paginator", () => {
       { owner: ownerB, foo: "a", timestamp: "2021-04-01" },
       { owner: ownerA, foo: "b", timestamp: "2021-03-01" },
       { owner: ownerB, foo: "c", timestamp: "2021-02-01" },
-      { owner: ownerA, foo: "d", timestamp: "2021-01-01" },
+      { owner: ownerA, foo: "d", timestamp: "2021-01-01", deletedAt: "2002-12-01", },
       {
         owner: ownerB,
         foo: "e",
@@ -187,10 +187,10 @@ describe("cursor paginator", () => {
     jest.spyOn(paginator, "page").mockImplementation();
 
     // @ts-expect-error
-    paginator.page({});
+    await paginator.page({});
 
     // @ts-expect-error
-    paginator.page({ first: 3, last: 3 });
+    await paginator.page({ first: 3, last: 3 });
   });
 
   it("aliases unmanaged columns", async () => {
