@@ -77,7 +77,7 @@ describe("cursor paginator", () => {
       .innerJoinAndSelect("f.owner", "o");
   });
 
-  it.only("paginates in ascending order", async () => {
+  it("paginates in ascending order", async () => {
     const paginator = new CursorPaginator(query, {
       "o.name": "ASC",
       foo: "ASC",

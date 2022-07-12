@@ -328,7 +328,7 @@ export class CursorPaginator<T> {
    * it to find the next set of results.
    */
   protected decodeCursor(cursor: string): string[] {
-    return JSON.parse(cursor).map((item: string) => JSON.parse(item));
+    return cursor.split(DELIMITER).map((item: string) => JSON.parse(item));
   }
 
   /**
@@ -343,6 +343,6 @@ export class CursorPaginator<T> {
       return JSON.stringify(row[property] || null);
     });
 
-    return JSON.stringify(data);
+    return data.join(DELIMITER);
   }
 }
