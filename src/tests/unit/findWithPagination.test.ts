@@ -1,8 +1,8 @@
 import * as typeorm from "typeorm";
 import { Like } from "typeorm";
-import { findWithPagination } from "./findWithPagination";
+import { findWithPagination } from "../../findWithPagination";
 
-import { getTestConnection, instrumentTestLogger } from "./testConnection";
+import { getTestConnection, instrumentTestLogger } from "../testConnection";
 
 @typeorm.Entity()
 class Person {
@@ -38,6 +38,7 @@ let connection: typeorm.Connection;
 
 beforeAll(async () => {
   connection = await getTestConnection([Foo, Bar, Person]);
+
 });
 
 afterAll(async () => {
@@ -48,39 +49,42 @@ afterEach(async () => {
   await connection.query("ROLLBACK").catch(() => {});
   jest.resetAllMocks();
 });
-
 describe("pagination", () => {
   beforeAll(async () => {
     const personRepository = connection.getRepository(Person);
     const ownerA = await personRepository.save({ name: "A" });
     const ownerB = await personRepository.save({ name: "B" });
 
+
     await connection.getRepository(Foo).insert([
-      { foo: "page-test-a", owner: ownerA },
-      { foo: "page-test-b", owner: ownerB },
-      { foo: "page-test-c", owner: ownerA },
+      { foo: "page-test-a", owner: ownerA, id: 'a' },
+      { foo: "page-test-b", owner: ownerB, id: 'b' },
+      { foo: "page-test-c", owner: ownerA, id: 'c' },
     ]);
   });
 
-  it("finds the first page with default order", async () => {
+  it("finds the first page with default order and default pagination", async () => {
+
     const fooRepository = connection.getRepository(Foo);
     const page = await findWithPagination(fooRepository, {
       select: ["foo"],
       where: { foo: Like("page-test-%") },
     });
-
-    expect(page.edges.length).toEqual(3);
+    expect(page.edges[0].node).toEqual({ foo: 'page-test-a' });
+    expect(page.pageInfo.hasPreviousPage).toEqual(false)
+    expect(page.pageInfo.hasNextPage).toEqual(false)
   });
 
-  it("finds the last page with default order", async () => {
+  it("finds the last page", async () => {
     const fooRepository = connection.getRepository(Foo);
     const page = await findWithPagination(fooRepository, {
       select: ["foo"],
       where: { foo: Like("page-test-%") },
-      pagination: { last: 3 },
+      pagination: { last: 2 }
     });
-
-    expect(page.edges.length).toEqual(3);
+    expect(page.edges.length).toEqual(2);
+    expect(page.pageInfo.hasPreviousPage).toEqual(true)
+    expect(page.pageInfo.hasNextPage).toEqual(false)
   });
 
   it("paginates a find query with custom order", async () => {
@@ -90,12 +94,11 @@ describe("pagination", () => {
       where: { foo: Like("page-test-%") },
       join: { alias: "f", innerJoin: { o: "f.owner" } },
       order: { "o.name": "DESC", foo: "DESC" },
-      pagination: { first: 2 },
+      pagination: { first: 3 },
     });
-
     expect(page.edges[0].node).toEqual({ foo: "page-test-b" });
-    expect(page.edges.length).toEqual(2);
-    expect(page.pageInfo.hasNextPage).toBe(true);
+    expect(page.edges[1].node).toEqual({ foo: "page-test-c" });
+    expect(page.edges.length).toEqual(3);
   });
 
   it("eager loads relations by default", async () => {
