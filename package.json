@@ -1,6 +1,6 @@
 {
-  "name": "@WorkTangohr/typeorm-pagination",
-  "repository": "github:WorkTangoHR/typeorm-pagination",
+  "name": "@kazoohr/typeorm-pagination",
+  "repository": "github:KazooHR/typeorm-pagination",
   "private": true,
   "version": "1.0.0-alpha",
   "engines": {

@@ -82,7 +82,7 @@ For more information on how cursor-based pagination works, and how it's standard
 ### Examples
 
 ```ts
-import { findWithPagination } from "@WorkTangohr/typeorm-pagination";
+import { findWithPagination } from "@kazoohr/typeorm-pagination";
 
 const page = await findWithPagination(goalRepository, {
   archived: false,
