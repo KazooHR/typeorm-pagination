@@ -2,7 +2,7 @@
 
 Enables [Relay-style cursor pagination](https://relay.dev/graphql/connections.htm) over any TypeORM repository using the built-in [`find` options](https://github.com/typeorm/typeorm/blob/master/docs/find-options.md) and more!
 
-In Kazoo's GraphQL layer, we use cursor pagination wherever feasible for the following benefits:
+In WorkTango's GraphQL layer, we use cursor pagination wherever feasible for the following benefits:
 
 - Records are not duplicated when iterating over an entire, frequently changing, result set
 - Each page is efficiently satisfied by a single query... including whether or not there is a next page!
@@ -82,7 +82,7 @@ For more information on how cursor-based pagination works, and how it's standard
 ### Examples
 
 ```ts
-import { findWithPagination } from "@kazoohr/typeorm-pagination";
+import { findWithPagination } from "@WorkTangohr/typeorm-pagination";
 
 const page = await findWithPagination(goalRepository, {
   archived: false,

@@ -1,13 +1,13 @@
 {
-  "name": "@kazoohr/typeorm-pagination",
-  "repository": "github:KazooHR/typeorm-pagination",
+  "name": "@WorkTangohr/typeorm-pagination",
+  "repository": "github:WorkTangoHR/typeorm-pagination",
   "private": true,
   "version": "1.0.0-alpha",
   "engines": {
     "node": ">=14.0.0"
   },
   "main": "build/index.js",
-  "author": "Kazoo <engineering@kazoohr.com>",
+  "author": "WorkTango <engineering@WorkTangohr.com>",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
