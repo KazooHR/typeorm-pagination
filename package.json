@@ -7,7 +7,7 @@
     "node": ">=14.0.0"
   },
   "main": "build/index.js",
-  "author": "Kazoo <engineering@kazoohr.com>",
+  "author": "WorkTango <engineering@worktango.com>",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
